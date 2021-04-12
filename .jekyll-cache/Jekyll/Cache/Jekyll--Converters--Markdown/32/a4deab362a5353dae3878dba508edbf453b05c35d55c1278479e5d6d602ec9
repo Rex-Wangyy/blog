@@ -1,0 +1,121 @@
+I"�D<h2 id="数据卷与网络">数据卷与网络</h2>
+
+<p>​		<strong>Data Volume</strong>，数据卷是从外界挂载在容器内文件系统中的文件或者目录，可以脱离容器的生命周期而独立存在。容器退出或者删除后，数据卷不收任何影响。数据卷数据不继承与镜像，写时复制机制不会作用于数据卷，不会被docker commit提交。</p>
+
+<p>​		通过创建容器创建的数据卷会自动挂载到容器中，对于通过 -v参数指定的并已经存在的数据卷也会找到并挂载。可以多个容器共享一个数据卷，可以实现容器之间的文件数据共享。</p>
+
+<p>​		<strong>数据卷容器</strong> ，专门存放数据卷的容器，不在把宿主机的目录当做数据卷进行挂载，以免破关docker的统一性，从数据卷容器进行数据卷的挂载。只是其他容器与数据卷连接的桥梁，并不需要保证数据卷容器必须在运行状态。其他容器只是利用数据卷容器给出的数据卷信息在docker中找到对应的数据卷。最好使用多个数据卷容器存放管理数据卷。</p>
+
+<h3 id="数据卷">数据卷</h3>
+
+<h4 id="创建数据卷">创建数据卷</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 创建数据卷 -v 挂载数据卷，可挂载多个
+# 所有对 /html 中的文件的操作都是对数据卷的操作
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">name</span> <span class="o">&lt;</span><span class="n">container</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">v</span> <span class="o">&lt;</span><span class="n">path1</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">v</span> <span class="o">&lt;</span><span class="n">path2</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">image</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">tag</span><span class="o">&gt;</span>
+<span class="c1"># 单独创建数据卷
+</span><span class="n">docker</span> <span class="n">volume</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="o">&lt;</span><span class="n">volume</span><span class="o">&gt;</span>
+
+<span class="c1"># eg
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">name</span> <span class="n">myweb</span> <span class="o">-</span><span class="n">v</span> <span class="o">/</span><span class="n">html</span> <span class="o">-</span><span class="n">v</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">nginx</span> <span class="n">nginx</span>
+<span class="n">docker</span> <span class="n">volume</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">myvolume</span>
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/创建挂载数据卷.png" /></p>
+
+<h4 id="查看数据卷信息">查看数据卷信息</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># command
+</span><span class="n">docker</span> <span class="n">inspect</span> <span class="o">&lt;</span><span class="n">volume</span><span class="o">&gt;</span>
+
+<span class="c1"># eg
+</span><span class="n">docker</span> <span class="n">inspect</span> <span class="n">myvolume</span>
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/数据卷详细信息.png" /></p>
+
+<h4 id="挂载数据卷">挂载数据卷</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 挂载已经存在的数据卷 -v &lt;数据卷名&gt;:&lt;挂载路径&gt;
+# 如果原路径已存在，会隐藏原有目录，并用数据卷替换
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">name</span> <span class="o">&lt;</span><span class="n">container</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">v</span> <span class="o">&lt;</span><span class="n">volume</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">path</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">image</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">tag</span><span class="o">&gt;</span>
+<span class="c1"># 将宿主机中已存在的目录作为数据卷挂载到容器中 只读 :ro
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">name</span> <span class="o">&lt;</span><span class="n">container</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">v</span> <span class="o">&lt;</span><span class="n">local</span> <span class="n">path</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">container</span> <span class="n">path</span><span class="o">&gt;</span><span class="p">:</span><span class="n">ro</span> <span class="o">&lt;</span><span class="n">image</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">tag</span><span class="o">&gt;</span>  
+
+<span class="c1"># eg
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">name</span> <span class="n">mycontainer2</span> <span class="o">-</span><span class="n">v</span> <span class="n">myvolume</span><span class="p">:</span><span class="o">/</span><span class="n">html</span> <span class="n">nginx</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">name</span> <span class="n">mycontainer3</span> <span class="o">-</span><span class="n">v</span> <span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">yingyu</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">docker_dir</span><span class="o">/</span><span class="n">volume</span><span class="p">:</span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">mynginx</span><span class="p">:</span><span class="n">ro</span> <span class="n">nginx</span>
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/挂载数据卷.png" /></p>
+
+<h4 id="查看数据卷列表">查看数据卷列表</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">docker</span> <span class="n">volume</span> <span class="nb">list</span>
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/查看数据卷列表.png" /></p>
+
+<h4 id="删除数据卷">删除数据卷</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 单独删除/随容器删除
+</span><span class="n">docker</span> <span class="n">rm</span> <span class="o">-</span><span class="n">v</span> <span class="o">&lt;</span><span class="n">container</span><span class="o">&gt;</span>
+<span class="n">docker</span> <span class="n">volume</span> <span class="n">rm</span> <span class="o">&lt;</span><span class="n">volume</span><span class="o">&gt;</span>
+<span class="c1"># 删除无主的数据卷
+</span><span class="n">docker</span> <span class="n">volume</span> <span class="n">prune</span>
+
+<span class="c1"># eg
+</span><span class="n">docker</span> <span class="n">rm</span> <span class="o">-</span><span class="n">v</span> <span class="n">mycontainer2</span>
+<span class="n">docker</span> <span class="n">volume</span> <span class="n">rm</span> <span class="n">myvolume</span>
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/删除数据卷.png" /></p>
+
+<h3 id="数据卷容器">数据卷容器</h3>
+
+<h4 id="使用数据卷容器">使用数据卷容器</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 创建数据卷容器
+</span><span class="n">docker</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">volumeDataContainer</span> <span class="o">-</span><span class="n">v</span> <span class="o">/</span><span class="n">html</span> <span class="n">debian</span><span class="p">:</span><span class="n">jessie</span>
+<span class="c1"># 挂载数据卷容器
+# --volumes-from 可以挂载指定数据卷容器中所有的数据卷，挂载路径会使用创建数据卷容器时的指定的挂载目录(路径)
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">name</span> <span class="n">mycontainer</span> <span class="o">--</span><span class="n">volumes</span><span class="o">-</span><span class="k">from</span> <span class="n">volumeDataContainer</span> <span class="n">nginx</span>
+<span class="c1"># 导出数据卷
+# cf create file  P 绝对路径，默认相对路径
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">--</span><span class="n">volumes</span><span class="o">-</span><span class="k">from</span> <span class="n">volumeDataContainer</span> <span class="o">-</span><span class="n">v</span> <span class="err">$</span><span class="p">(</span><span class="n">pwd</span><span class="p">):</span><span class="o">/</span><span class="n">backup</span> <span class="o">--</span><span class="n">name</span> <span class="n">exporter</span> <span class="o">--</span><span class="n">rm</span> <span class="n">debian</span><span class="p">:</span><span class="n">jessie</span> <span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">bash</span> <span class="n">tar</span> <span class="n">cfP</span> <span class="o">/</span><span class="n">backup</span><span class="o">/</span><span class="n">backup</span><span class="p">.</span><span class="n">tar</span> <span class="o">/</span><span class="n">data</span>
+<span class="c1"># 直接导出无交互
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">--</span><span class="n">volumes</span><span class="o">-</span><span class="k">from</span> <span class="n">volumeDataContainer</span> <span class="o">-</span><span class="n">v</span> <span class="err">$</span><span class="p">(</span><span class="n">pwd</span><span class="p">):</span><span class="o">/</span><span class="n">backup</span> <span class="o">--</span><span class="n">rm</span> <span class="n">ubuntu</span> <span class="n">tar</span> <span class="n">cfP</span> <span class="o">/</span><span class="n">backup</span><span class="o">/</span><span class="n">backup2</span><span class="p">.</span><span class="n">tar</span> <span class="o">/</span><span class="n">html</span>
+<span class="c1"># 恢复数据卷， x extract 从备份文件中还原文件
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">--</span><span class="n">volumes</span><span class="o">-</span><span class="k">from</span> <span class="n">volumeDataContainer</span> <span class="o">-</span><span class="n">v</span> <span class="err">$</span><span class="p">(</span><span class="n">pwd</span><span class="p">):</span><span class="o">/</span><span class="n">backup</span> <span class="o">--</span><span class="n">rm</span> <span class="n">ubuntu</span> <span class="n">tar</span> <span class="n">xfP</span> <span class="o">/</span><span class="n">backup</span><span class="o">/</span><span class="n">backup</span><span class="p">.</span><span class="n">tar</span> <span class="o">/</span><span class="n">html</span>
+</code></pre></div></div>
+
+<h3 id="网络">网络</h3>
+
+<p>docker通过Network Namespace的方式为每个容器建立了独立的网络。docker启动是会在宿主机上架设一个名为docker0的虚拟网络，用来连接宿主机与容器。</p>
+
+<p>容器启动时会把独立网络通过 Veth Pair 连接到docker0。当连接到docker0上时，就与其他连接到此的容器属于同一个子网中。容器间通过docker0子网来互相访问。</p>
+
+<h4 id="绑定端口限制ip">绑定端口，限制ip</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 端口绑定 -P 随机寻找可用端口绑定 -p 指定端口
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">P</span> <span class="o">&lt;</span><span class="n">image</span><span class="o">&gt;</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="o">&lt;</span><span class="n">local</span> <span class="n">port1</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">container</span> <span class="n">port1</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">p</span> <span class="o">&lt;</span><span class="n">local</span> <span class="n">port2</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">container</span> <span class="n">port2</span><span class="o">&gt;</span> <span class="p">...</span> <span class="o">&lt;</span><span class="n">image</span><span class="o">&gt;</span>
+<span class="c1"># ip限制 只接受此ip的请求
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="o">&lt;</span><span class="n">ip</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">local</span> <span class="n">port</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">container</span> <span class="n">port</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">image</span><span class="o">&gt;</span>
+
+<span class="c1"># eg
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">nginx</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mf">127.0</span><span class="p">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">nginx</span>
+</code></pre></div></div>
+
+<h4 id="容器间通信">容器间通信</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 容器间通信 exec进入容器可用 env 查看相关信息
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">--</span><span class="n">name</span> <span class="n">mysql</span> <span class="o">-</span><span class="n">e</span> <span class="n">MYSQL_ROOT_PASSWORD</span><span class="o">=</span><span class="n">root</span> <span class="n">mysql</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="o">--</span><span class="n">name</span> <span class="n">mynginx</span> <span class="o">--</span><span class="n">link</span> <span class="n">mysql</span> <span class="n">nginx</span>
+
+<span class="c1"># 连接别名 容器中 env 命令查看信息对应名字
+</span><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="o">--</span><span class="n">name</span> <span class="n">mynginx</span> <span class="o">--</span><span class="n">link</span> <span class="n">mysql</span><span class="p">:</span><span class="n">db</span> <span class="n">nginx</span>
+</code></pre></div></div>
+
+:ET
