@@ -1,0 +1,56 @@
+I"�<p>##</p>
+
+<h2 id="kubernrtes安装">Kubernrtes安装</h2>
+
+<h3 id="mac">MAC</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 下载kubectl组件</span>
+curl <span class="nt">-Lo</span> kubectl https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/darwin/amd64/kubectl <span class="o">&amp;&amp;</span> <span class="nb">chmod</span> +x kubectl <span class="o">&amp;&amp;</span> <span class="nb">sudo mv </span>kubectl /usr/local/bin/
+<span class="c"># 查看kubectl版本</span>
+kubectl version
+<span class="c"># 下载virtualbox</span>
+https://download.virtualbox.org/virtualbox
+<span class="c"># 下载minikube</span>
+curl <span class="nt">-Lo</span> minikube http://kubernetes.oss-cn-hangzhou.aliyuncs.com/minikube/releases/v1.2.0/minikube-darwin-amd64 <span class="o">&amp;&amp;</span> <span class="nb">chmod</span> +x minikube <span class="o">&amp;&amp;</span> <span class="nb">sudo mv </span>minikube /usr/local/bin/
+<span class="c"># 启动minikube</span>
+minikube start <span class="nt">--vm-driver</span><span class="o">=</span>virtualbox
+<span class="c"># dashboard</span>
+minikube dashboard
+<span class="c"># URL</span>
+http://127.0.0.1:62031/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!/overview?namespace<span class="o">=</span>default
+</code></pre></div></div>
+
+<h3 id="wondows-10">Wondows 10</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># win10 开启虚拟化</span>
+<span class="c"># 在 Windows 上用 Chocolatey (一个包管理器)安装 kubectl  https://chocolatey.org/install</span>
+<span class="c"># 打开PowerShell，用管理员身份</span>
+<span class="c"># 必须确保Get-ExecutionPolicy不受限制，</span>
+Get-ExecutionPolicy
+<span class="c"># 返回Restricted</span>
+Set-ExecutionPolicy AllSigned
+<span class="c"># 安装Chocolatey,执行此命令</span>
+Set-ExecutionPolicy Bypass <span class="nt">-Scope</span> Process <span class="nt">-Force</span><span class="p">;</span> <span class="o">[</span>System.Net.ServicePointManager]::SecurityProtocol <span class="o">=</span> <span class="o">[</span>System.Net.ServicePointManager]::SecurityProtocol <span class="nt">-bor</span> 3072<span class="p">;</span> iex <span class="o">((</span>New-Object System.Net.WebClient<span class="o">)</span>.DownloadString<span class="o">(</span><span class="s1">'https://chocolatey.org/install.ps1'</span><span class="o">))</span>
+<span class="c"># 检测是否安装成功</span>
+choco -
+<span class="c"># 在 Windows 上用 Chocolatey 安装 kubectl</span>
+choco <span class="nb">install </span>kubernetes-cli
+<span class="c"># 检测版本</span>
+kubectl version <span class="nt">--client</span>
+<span class="c"># 切换本地HOME目录</span>
+<span class="nb">cd </span>C:<span class="se">\U</span>sers<span class="se">\u</span>ser11<span class="se">\</span>
+<span class="c"># 创建 .kube 目录</span>
+<span class="nb">mkdir</span> .kube
+<span class="c"># 切换到刚刚创建的 .kube 目录</span>
+<span class="nb">cd</span> .kube
+<span class="c"># 配置 kubectl 以使用远程 Kubernetes 集群</span>
+New-Item config <span class="nt">-type</span> file
+<span class="c"># 开启PowerShell（管理员)，执行如下命令，然后重启电脑</span>
+Enable-WindowsOptionalFeature <span class="nt">-Online</span> <span class="nt">-FeatureName</span> Microsoft-Hyper-V <span class="nt">-All</span>
+<span class="c"># 使用 Chocolatey 安装 Minikube</span>
+choco <span class="nb">install </span>minikube
+<span class="c"># 关闭当前 CLI 界面再重新打开,Minikube 应该已经自动添加至 path 中</span>
+<span class="c"># 确认 hypervisor 和 Minikube 均已成功安装</span>
+</code></pre></div></div>
+
+:ET

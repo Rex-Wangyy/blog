@@ -1,0 +1,90 @@
+I"<h2 id="image-镜像">Image 镜像</h2>
+
+<p>镜像是容器的基础，运行时并不是把所有内容复制到沙盒环境，是在镜像上加一层可读写的镜像层，原有镜像以只读方式衔接在下方，不需要任何复制和开辟新空间，只有修改文件时才会复制对应文件到沙盒镜像层。这种机制保证了docker的启动速度。</p>
+
+<h4 id="获取镜像">获取镜像</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># command</span>
+docker pull &lt;namespace&gt;/&lt;image&gt;:&lt;tag&gt;
+<span class="c"># eg</span>
+docker pull openresty/openresty:1.9.15.1-centos
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/%E8%8E%B7%E5%8F%96%E9%95%9C%E5%83%8F.png" /></p>
+
+<h4 id="dockerhub-查找镜像">DockerHub 查找镜像</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># command</span>
+docker search &lt;image&gt;
+<span class="c"># eg</span>
+docker search php
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/%E6%9F%A5%E6%89%BE%E9%95%9C%E5%83%8F.png" /></p>
+
+<h4 id="查看本地镜像">查看本地镜像</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker images
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/%E6%9F%A5%E7%9C%8B%E6%9C%AC%E5%9C%B0%E9%95%9C%E5%83%8F.png" /></p>
+
+<h4 id="镜像的详细信息">镜像的详细信息</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 可接受name/image id</span>
+docker inspect &lt;image name/id&gt;
+<span class="c"># eg</span>
+docker inspect nginx
+docker inspect nginx 7ce4f91ef623
+
+<span class="c"># 过滤信息 json的key</span>
+docker inspect <span class="nt">-f</span> .&lt;key&gt;.&lt;key2&gt; &lt;image name/id&gt;
+<span class="c"># eg</span>
+docker inspect <span class="nt">-f</span> .RootFS.Type 7ce4f91ef623
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/%E9%95%9C%E5%83%8F%E7%9A%84%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF.png" /></p>
+
+<h4 id="删除镜像">删除镜像</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 不可删除正在使用的镜像， -f 参数可强制删除，不推荐会有各种后遗症</span>
+<span class="c"># 可接受name/image id</span>
+docker rmi &lt;image name/id&gt;
+<span class="c"># eg</span>
+docker rmi wyy/nginx
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/%E5%88%A0%E9%99%A4%E9%95%9C%E5%83%8F.png" /></p>
+
+<h4 id="镜像导出导入压缩包">镜像导出/导入压缩包</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 镜像导出</span>
+<span class="c"># 支持多个镜像导出</span>
+docker save <span class="nt">-o</span> &lt;<span class="nb">tar </span>file name&gt; &lt;image1&gt;:&lt;tag1&gt; &lt;image2&gt;:&lt;tag2&gt; ...
+docker save &lt;image&gt;:&lt;tag&gt; <span class="o">&gt;</span> &lt;<span class="nb">tar </span>file name&gt;
+<span class="c"># eg</span>
+docker save <span class="nt">-o</span> mynginx.tar nginx:latest
+docker save nginx:latest <span class="o">&gt;</span> mynginx2.tar
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/%E9%95%9C%E5%83%8F%E5%8E%8B%E7%BC%A9%E5%8C%85.png" /></p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 镜像导入, -i --input</span>
+docker load <span class="nt">-i</span> &lt;<span class="nb">tar </span>file name&gt;
+docker load &lt; &lt;<span class="nb">tar </span>file name&gt;
+<span class="c"># eg</span>
+docker load <span class="nt">-i</span> mynginx.tar
+docker load &lt; mynginx.tar
+</code></pre></div></div>
+
+<h4 id="镜像标签">镜像标签</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 修改镜像标签</span>
+docker tag &lt;namespace&gt;/&lt;image&gt;:&lt;tag&gt; &lt;namespace2&gt;/&lt;image2&gt;:&lt;tag2&gt;
+<span class="c"># eg</span>
+docker tag nginx:latest wyy/nginx:latest
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/%E4%BF%AE%E6%94%B9tag.png" /></p>
+
+:ET

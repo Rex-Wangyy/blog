@@ -1,0 +1,178 @@
+I"� <h2 id="container-容器">Container 容器</h2>
+
+<p>容器会包含代码运行时需要的一切，无论环境如何不会对容器内代码造成影响。</p>
+
+<h4 id="创建容器">创建容器</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 创建容器返回容器ID</span>
+docker create &lt;image&gt;:&lt;tag&gt;
+<span class="c"># eg</span>
+docker create debian:jessie
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/%E5%88%9B%E5%BB%BA%E5%AE%B9%E5%99%A8.png" /></p>
+
+<h4 id="运行容器">运行容器</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># -i --interactive 交互模式  / -d 后台运行  不能共存</span>
+<span class="c"># -t --tty 分配伪终端</span>
+<span class="c"># --name 容器命名</span>
+docker run <span class="nt">-i</span> <span class="nt">-t</span> &lt;image&gt;:&lt;tag&gt; /bin/bash
+<span class="c"># eg</span>
+docker run <span class="nt">-i</span> <span class="nt">-t</span> <span class="nt">--name</span><span class="o">=</span>mycontainer debian:jessie /bin/bash
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/运行容器.png" /></p>
+
+<h4 id="查看容器">查看容器</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 查看容器(正在运行) -a 所有</span>
+<span class="c"># -l --latest 最后创建的容器 </span>
+<span class="c"># -n &lt;num&gt; --last &lt;num&gt; 最近创建的num个容器</span>
+<span class="c"># -f --filter "key=value" 过滤</span>
+docker ps <span class="nt">-a</span>
+<span class="c"># eg</span>
+docker ps <span class="nt">-a</span> <span class="nt">-f</span> <span class="s2">"name=mycontainer"</span>
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/查看容器.png" /></p>
+
+<h4 id="启动停止容器">启动/停止容器</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 启动容器 可传入多个容器名</span>
+docker start &lt;container1&gt; &lt;container2&gt;
+<span class="c"># eg</span>
+docker start mycontainer
+
+<span class="c"># 停止容器 -t --time 停止时间 默认10s</span>
+docker stop &lt;container1&gt; &lt;container2&gt;
+<span class="c"># eg</span>
+docker stop mycontainer
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/启动或停止容器.png" /></p>
+
+<h4 id="暂停恢复容器">暂停/恢复容器</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 暂停容器 不会关闭进程</span>
+docker pause &lt;container1&gt; &lt;container2&gt;
+<span class="c"># eg</span>
+docker pause mycontainer
+
+<span class="c"># 恢复容器</span>
+docker pause &lt;container1&gt; &lt;container2&gt;
+<span class="c"># eg</span>
+docker unpause mycontainer
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/暂停或恢复容器.png" /></p>
+
+<h4 id="重启容器">重启容器</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># command</span>
+docker restart &lt;container1&gt; &lt;container2&gt;
+<span class="c"># eg</span>
+docker restart mycontainer
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/重启容器.png" /></p>
+
+<h4 id="删除容器">删除容器</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># command</span>
+docker <span class="nb">rm</span> &lt;container1&gt; &lt;container2&gt;
+<span class="c"># eg</span>
+docker <span class="nb">rm </span>mycontainer
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/删除容器.png" /></p>
+
+<h4 id="查看进程信息">查看进程信息</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 查看进程信息 支持ps的参数</span>
+docker top &lt;container&gt;
+<span class="c"># eg</span>
+docker top mycontainer
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/查看容器进程信息.png" /></p>
+
+<h4 id="查看容器详细信息">查看容器详细信息</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># command</span>
+docker inspect &lt;container&gt;
+docker inspect <span class="nt">-f</span>  &lt;container&gt;
+<span class="c"># eg</span>
+docker inspect mycontainer
+docker inspect <span class="nt">-f</span>  mycontainer
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/查看容器详细信息.png" /></p>
+
+<h4 id="查看log">查看log</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># -f --follow 持续输出</span>
+docker logs &lt;container&gt;
+<span class="c"># eg</span>
+<span class="c"># 构建一个持续输出的容器</span>
+docker run <span class="nt">-d</span> <span class="nt">--name</span> logs_demo debian:jessie /bin/bash <span class="nt">-c</span> <span class="s1">'for((i=0;1;i++));do echo "time $i";sleep 1;done;'</span>
+<span class="c"># -f --follow 持续输出</span>
+docker logs logs_demo
+docker logs <span class="nt">-f</span> <span class="nt">--tail</span> 5 logs_demo
+<span class="c"># --tail 最后几行输出</span>
+docker logs <span class="nt">--tail</span> 5 logs_demo
+<span class="c"># --since 指定时间戳之后的内容</span>
+docker logs <span class="nt">--since</span> 2021-04-10T21:44:55.123456789Z logs_demo
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/容器查看log.png" /></p>
+
+<h4 id="连接容器">连接容器</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># command</span>
+docker attach &lt;container&gt;
+<span class="c"># eg</span>
+docker attach mycontainer
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/连接容器.png" /></p>
+
+<h4 id="在容器中执行命令">在容器中执行命令</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 在容器中执行命令</span>
+docker <span class="nb">exec</span> &lt;container&gt; &lt;<span class="nb">command</span><span class="o">&gt;</span>
+<span class="c"># 进入交互模式</span>
+docker <span class="nb">exec</span> <span class="nt">-i-t</span> &lt;container&gt; /bin/bash
+<span class="c"># eg</span>
+docker <span class="nb">exec </span>mycontainer <span class="nb">tail</span> /var/log/nginx/access.log
+docker <span class="nb">exec</span> <span class="nt">-i-t</span> mycontainer /bin/bash
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/容器中执行命令.png" /></p>
+
+<h4 id="提交容器修改">提交容器修改</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># command</span>
+docker commit <span class="nt">-m</span><span class="s2">"&lt;message describe commit&gt;"</span> &lt;container&gt; &lt;namespace&gt;/&lt;image&gt;:&lt;tag&gt;
+<span class="c"># eg</span>
+docker commit <span class="nt">-m</span><span class="s2">"msg"</span> mycontainer wyy/mycontainer:latest
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/容器提交.png" /></p>
+
+<h4 id="容器导出导入">容器导出/导入</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 容器导出</span>
+docker <span class="nb">export</span> <span class="nt">-o</span> &lt;<span class="nb">tar </span>file&gt; &lt;container&gt;
+<span class="c"># eg</span>
+docker <span class="nb">export</span> <span class="nt">-o</span> mycontainer.tar mycontainer
+
+<span class="c"># 导入容器（导入后会被持久化伪镜像，不在容器列表里）</span>
+docker import &lt;<span class="nb">tar </span>file&gt;
+<span class="c"># eg</span>
+docker import mycontainer.tar
+</code></pre></div></div>
+
+<p><img src="https://rex-wangyy.github.io/Imgs/docker/容器导入导出.png" /></p>
+
+:ET

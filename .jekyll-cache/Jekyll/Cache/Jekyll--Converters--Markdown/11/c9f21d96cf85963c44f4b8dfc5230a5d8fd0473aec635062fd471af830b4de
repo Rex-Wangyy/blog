@@ -1,0 +1,113 @@
+I"_<h2 id="制作镜像-dockerfile">制作镜像 Dockerfile</h2>
+
+<h3 id="基本指令">基本指令</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># from 基于的镜像和版本号</span>
+FROM &lt;image&gt;
+FROM &lt;image&gt;:&lt;tag&gt;
+FROM &lt;image&gt;@&lt;digest&gt;
+
+<span class="c"># maintainer 提供作者的信息</span>
+MAINTAINER &lt;name&gt;
+
+<span class="c"># docker build 不使用缓存，例如更新命名加参数</span>
+<span class="nt">--no-cache</span>
+</code></pre></div></div>
+
+<h3 id="控制指令">控制指令</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># run 在基础镜像中需要做命令操作 第一种支持 \ 换行</span>
+<span class="c"># 每次执行 run 都会创建一个新的镜像层</span>
+<span class="c"># run是构建中执行</span>
+RUN &lt;<span class="nb">command</span><span class="o">&gt;</span> &lt;param1&gt; &lt;param2&gt; ...
+RUN <span class="o">[</span><span class="s2">"/bin/bash"</span>, <span class="s2">"-c"</span>, <span class="s2">"echo hello"</span><span class="o">]</span>
+
+<span class="c"># workdir 切换构建环境中的工作目录 相对路径/绝对路径</span>
+WORKDIR /user
+WORKDIR <span class="nb">local</span>
+<span class="c"># 使用环境变量</span>
+ENV BASEDIR /project
+WORKDIR <span class="nv">$BASEDIR</span>/www
+
+<span class="c"># onbuild 当前镜像被当做基础镜像构建时执行</span>
+ONBUILD INSTRUCTION arguments
+</code></pre></div></div>
+
+<h3 id="引入指令">引入指令</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># add将文件，源码，脚本等从外部传递到镜像内</span>
+<span class="c"># src 需要使用相对路径且不能超出docker build级别，即不能使用 ../</span>
+<span class="c"># 本地文件会自动解压，网络文件不会</span>
+ADD &lt;src1&gt; &lt;src2&gt; ... &lt;dest&gt;
+ADD <span class="o">[</span><span class="s2">"&lt;src1&gt;"</span>, <span class="s2">"&lt;src2&gt;"</span>, ... <span class="s2">"&lt;dest&gt;"</span><span class="o">]</span>
+<span class="c"># eg 使用GO语言名匹配规则</span>
+ADD hom<span class="k">*</span> /mydir/
+ADD hom?.txt /mydir/
+
+<span class="c"># copy 不支持网络文件，不会解压</span>
+COPY &lt;src1&gt; &lt;src2&gt; ... &lt;dest&gt;
+COPY <span class="o">[</span><span class="s2">"&lt;src1&gt;"</span>, <span class="s2">"&lt;src2&gt;"</span>, ... <span class="s2">"&lt;dest&gt;"</span><span class="o">]</span>
+</code></pre></div></div>
+
+<h3 id="执行指令">执行指令</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># cmd 指定由镜像创建的的容器中的主体程序</span>
+<span class="c"># cmd 构建中不能执行，只是配置镜像默认入口程序</span>
+<span class="c"># 多个cmd会被覆盖</span>
+CMD &lt;<span class="nb">command</span><span class="o">&gt;</span> &lt;param1&gt; &lt;param2&gt; ...
+CMD <span class="o">[</span><span class="s2">"&lt;param1&gt;"</span>, <span class="s2">"&lt;param2&gt;"</span>, ...]
+
+<span class="c"># entrypoint 主程序启动前的准备工作</span>
+ENTRYPOINT &lt;<span class="nb">command</span><span class="o">&gt;</span> &lt;param1&gt; &lt;param2&gt; ...
+ENTRYPOINT <span class="o">[</span><span class="s2">"executable"</span>, <span class="s2">"&lt;param1&gt;"</span>, <span class="s2">"&lt;param2&gt;"</span>, ...]
+</code></pre></div></div>
+
+<h3 id="配置指令">配置指令</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># expose 容器开放端口，使端口可从容器外部访问到</span>
+<span class="c"># 新的网络模块已经不需要主动敞开端口</span>
+<span class="c"># 有区别于run命令的 -p -P 参数，只有开房后才能使用-p参数映射到</span>
+EXPOSE &lt;port&gt; <span class="o">[</span>&lt;port&gt;...]
+
+<span class="c"># env 指定环境变量，在其他docker指令中使用</span>
+<span class="c"># 优先级高于arg，无论定义先后，都会覆盖arg的同名参数</span>
+<span class="c"># 基础镜像中的env会被继承到将要构建的镜像中，可通过inspect查看，或docker run --env &lt;k1&gt;=&lt;v1&gt;新增/替换</span>
+ENV &lt;key&gt; &lt;value&gt; <span class="c"># 单个</span>
+ENV &lt;k1&gt;<span class="o">=</span>&lt;v1&gt; &lt;k2&gt;<span class="o">=</span>&lt;v2&gt; ... <span class="c"># 多个(推荐)</span>
+<span class="c"># 如果仅想在一条命令中使用env</span>
+RUN &lt;key&gt;<span class="o">=</span>&lt;value&gt; <span class="nb">command </span>param1 param2 ...
+
+<span class="c"># label 为即将生成的镜像提供一些元素作为标记，可用 \ 换行</span>
+<span class="c"># 在inspect命令中的 Labels 中可以查看</span>
+LABEL &lt;k1&gt;<span class="o">=</span>&lt;v1&gt; <span class="se">\</span>
+	  &lt;k2&gt;<span class="o">=</span>&lt;v2&gt;
+	  
+<span class="c"># user 设置执行用户 用户名/UID，会影响到之后的 run，cmd，entrypoint命令</span>
+USER nginx
+
+<span class="c"># arg 设置变量，仅作用于镜像构建的过程中，应由外部传递</span>
+<span class="c"># 通过 docker build的 --build-arg来传参</span>
+<span class="c"># 不要传密码之类的，构建参数可被docker history查询</span>
+ARG &lt;name&gt; <span class="c"># 仅定义</span>
+ARG &lt;name&gt;<span class="o">=</span>&lt;default value&gt;
+<span class="c"># eg：docker build --build-arg user=root ./busybox</span>
+FROM BusyBox
+ARG user
+USER <span class="nv">$user</span>
+<span class="c"># 优先级低于env，无论定义先后，都会被env的同名参数覆盖，可用此特性给环境变量传参</span>
+FROM Ubuntu
+ARG DEMO_VER
+ENV <span class="nv">$DEMO_VER</span>
+<span class="c"># docker 预置了一些变量</span>
+HTTP_PROXY，http_proxy，HTTPS_PROXY，https_proxy，FTP_PROXY，ftp_proxy，NO_PROXY，no_proxy，
+
+<span class="c"># stopsignal 停止信号，支持syscall数字表示，或信号名</span>
+STOPSIGNAL 9
+STOPSIGNAL SIGKILL
+
+<span class="c"># shell，指定shell程序，cmd，entrypoint都支持shell执行</span>
+<span class="c"># 默认是 /bin/sh</span>
+SHELL <span class="o">[</span><span class="s2">"/bin/bash"</span>, <span class="s2">"-c"</span><span class="o">]</span>
+</code></pre></div></div>
+
+:ET

@@ -1,0 +1,148 @@
+---
+layout: post
+title: '初识Docker(四)'
+date: 2021-04-12
+author: Rex
+cover: 'http://on2171g4d.bkt.clouddn.com/jekyll-banner.png'
+tags: Docker
+---
+
+## 制作镜像 Dockerfile
+
+
+
+### 基本指令
+
+```shell
+# from 基于的镜像和版本号
+FROM <image>
+FROM <image>:<tag>
+FROM <image>@<digest>
+
+# maintainer 提供作者的信息
+MAINTAINER <name>
+
+# docker build 不使用缓存，例如更新命名加参数
+--no-cache
+```
+
+
+
+### 控制指令
+
+```shell
+# run 在基础镜像中需要做命令操作 第一种支持 \ 换行
+# 每次执行 run 都会创建一个新的镜像层
+# run是构建中执行
+RUN <command> <param1> <param2> ...
+RUN ["/bin/bash", "-c", "echo hello"]
+
+# workdir 切换构建环境中的工作目录 相对路径/绝对路径
+WORKDIR /user
+WORKDIR local
+# 使用环境变量
+ENV BASEDIR /project
+WORKDIR $BASEDIR/www
+
+# onbuild 当前镜像被当做基础镜像构建时执行
+ONBUILD INSTRUCTION arguments
+```
+
+
+
+### 引入指令
+
+```shell
+# add将文件，源码，脚本等从外部传递到镜像内
+# src 需要使用相对路径且不能超出docker build级别，即不能使用 ../
+# 本地文件会自动解压，网络文件不会
+ADD <src1> <src2> ... <dest>
+ADD ["<src1>", "<src2>", ... "<dest>"]
+# eg 使用GO语言名匹配规则
+ADD hom* /mydir/
+ADD hom?.txt /mydir/
+
+# copy 不支持网络文件，不会解压
+COPY <src1> <src2> ... <dest>
+COPY ["<src1>", "<src2>", ... "<dest>"]
+```
+
+
+
+### 执行指令
+
+```shell
+# cmd 指定由镜像创建的的容器中的主体程序
+# cmd 构建中不能执行，只是配置镜像默认入口程序
+# 多个cmd会被覆盖
+CMD <command> <param1> <param2> ...
+CMD ["<param1>", "<param2>", ...]
+
+# entrypoint 主程序启动前的准备工作
+ENTRYPOINT <command> <param1> <param2> ...
+ENTRYPOINT ["executable", "<param1>", "<param2>", ...]
+```
+
+
+
+### 配置指令
+
+```shell
+# expose 容器开放端口，使端口可从容器外部访问到
+# 新的网络模块已经不需要主动敞开端口
+# 有区别于run命令的 -p -P 参数，只有开房后才能使用-p参数映射到
+EXPOSE <port> [<port>...]
+
+# env 指定环境变量，在其他docker指令中使用
+# 优先级高于arg，无论定义先后，都会覆盖arg的同名参数
+# 基础镜像中的env会被继承到将要构建的镜像中，可通过inspect查看，或docker run --env <k1>=<v1>新增/替换
+ENV <key> <value> # 单个
+ENV <k1>=<v1> <k2>=<v2> ... # 多个(推荐)
+# 如果仅想在一条命令中使用env
+RUN <key>=<value> command param1 param2 ...
+
+# label 为即将生成的镜像提供一些元素作为标记，可用 \ 换行
+# 在inspect命令中的 Labels 中可以查看
+LABEL <k1>=<v1> \
+	  <k2>=<v2>
+	  
+# user 设置执行用户 用户名/UID，会影响到之后的 run，cmd，entrypoint命令
+USER nginx
+
+# arg 设置变量，仅作用于镜像构建的过程中，应由外部传递
+# 通过 docker build的 --build-arg来传参
+# 不要传密码之类的，构建参数可被docker history查询
+ARG <name> # 仅定义
+ARG <name>=<default value>
+# eg：docker build --build-arg user=root ./busybox
+FROM BusyBox
+ARG user
+USER $user
+# 优先级低于env，无论定义先后，都会被env的同名参数覆盖，可用此特性给环境变量传参
+FROM Ubuntu
+ARG DEMO_VER
+ENV $DEMO_VER
+# docker 预置了一些变量
+HTTP_PROXY，http_proxy，HTTPS_PROXY，https_proxy，FTP_PROXY，ftp_proxy，NO_PROXY，no_proxy，
+
+# stopsignal 停止信号，支持syscall数字表示，或信号名
+STOPSIGNAL 9
+STOPSIGNAL SIGKILL
+
+# shell，指定shell程序，cmd，entrypoint都支持shell执行
+# 默认是 /bin/sh
+SHELL ["/bin/bash", "-c"]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
